@@ -1,10 +1,8 @@
 import React from 'react';
-<<<<<<< HEAD
+
 // We comment out the Seeder so it doesn't accidentally run again
 // import SeedButton from "@/components/SeedButton"; 
 
-=======
->>>>>>> be242829e40be23b611ec77cf5997886b72f17fa
 export default function Home() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
@@ -23,22 +21,19 @@ export default function Home() {
       {/* 2. The Search Area (Future Placeholder) */}
       <div className="w-full max-w-2xl p-6 bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 shadow-2xl">
         <div className="flex flex-col gap-4">
-            {/* Fake Search Bar for UI Visualization */}
-            <input 
-              type="text" 
-              placeholder="Search by hostel name or location..." 
-              className="w-full px-5 py-4 rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-4 focus:ring-indigo-300 shadow-inner"
-            />
-            
-            <div className="flex gap-4">
-              <button className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 rounded-lg font-semibold transition shadow-lg">
-                Find Hostels
-              </button>
-<<<<<<< HEAD
-              {/* Note: The "Admin Login" button is GONE. */}
-=======
->>>>>>> be242829e40be23b611ec77cf5997886b72f17fa
-            </div>
+          {/* Fake Search Bar for UI Visualization */}
+          <input 
+            type="text" 
+            placeholder="Search by hostel name or location..." 
+            className="w-full px-5 py-4 rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-4 focus:ring-indigo-300 shadow-inner"
+          />
+          
+          <div className="flex gap-4">
+            <button className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 rounded-lg font-semibold transition shadow-lg">
+              Find Hostels
+            </button>
+            {/* Note: The "Admin Login" button is GONE. */}
+          </div>
         </div>
         <p className="text-center text-indigo-200 text-xs mt-4 opacity-70">
           Showing 22 Verified Hostels in Thrikkakara
