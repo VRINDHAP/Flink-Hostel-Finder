@@ -14,6 +14,9 @@ interface HostelContextType {
   loading: boolean;             // True if we are still fetching data
   triggerUpdate: (id: string, data: Partial<Hostel>) => Promise<void>; // Function to update data
   filterData: (criteria: FilterCriteria) => void; // Function to filter data
+  // --- NEW CAPABILITIES ---
+  addHostel: (hostel: Hostel) => Promise<void>;
+  deleteHostel: (id: string) => Promise<void>;
 }
 
 // Create the context (initially undefined)
@@ -48,21 +51,49 @@ export const HostelProvider = ({ children }: { children: ReactNode }) => {
   const triggerUpdate = async (id: string, data: Partial<Hostel>) => {
     // 1. Update the "database"
     const updatedHostel = await fakeAPI.updateHostel(id, data);
-    
+
     if (updatedHostel) {
       // 2. Update the local state immediately so the user sees the change
-      setHostels((prev) => 
+      setHostels((prev) =>
         prev.map((h) => (h.id === id ? updatedHostel : h))
       );
       // Update filtered list too, just in case the updated hostel is currently shown
-      setFilteredHostels((prev) => 
+      setFilteredHostels((prev) =>
         prev.map((h) => (h.id === id ? updatedHostel : h))
       );
     }
   };
 
+  // Logic: Handle Adding (For Member 3 - Admin Dashboard)
+  const addHostelData = async (newHostel: Hostel) => {
+    // 1. Send to "Database"
+    await fakeAPI.addHostel(newHostel);
+
+    // 2. Update local state immediately so it appears in the table (Optimistic UI)
+    setHostels((prev) => [...prev, newHostel]);
+    setFilteredHostels((prev) => [...prev, newHostel]);
+  };
+
+  // Logic: Handle Deleting (For Member 3 - Admin Dashboard)
+  const deleteHostelData = async (id: string) => {
+    // 1. Tell "Database" to delete
+    await fakeAPI.deleteHostel(id);
+
+    // 2. Remove from local state
+    setHostels((prev) => prev.filter((h) => h.id !== id));
+    setFilteredHostels((prev) => prev.filter((h) => h.id !== id));
+  };
+
   return (
-    <HostelContext.Provider value={{ hostels, filteredHostels, loading, triggerUpdate, filterData }}>
+    <HostelContext.Provider value={{
+      hostels,
+      filteredHostels,
+      loading,
+      triggerUpdate,
+      filterData,
+      addHostel: addHostelData,       // Exposed to the app
+      deleteHostel: deleteHostelData  // Exposed to the app
+    }}>
       {children}
     </HostelContext.Provider>
   );
