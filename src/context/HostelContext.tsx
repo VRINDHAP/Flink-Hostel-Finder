@@ -3,7 +3,8 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Hostel } from '../types';
-import * as fakeAPI from '../lib/fakeAPI';
+// import * as fakeAPI from '../lib/fakeAPI';
+import * as firebaseAPI from '../lib/firebaseAPI';
 import { applyFilters, FilterCriteria } from '../lib/filters';
 
 // 1. Define the shape of our "Bridge"
@@ -33,7 +34,8 @@ export const HostelProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const load = async () => {
       setLoading(true);
-      const data = await fakeAPI.getHostels();
+      // const data = await fakeAPI.getHostels();
+      const data = await firebaseAPI.getHostels();
       setHostels(data);
       setFilteredHostels(data); // Initially, show all hostels
       setLoading(false);
@@ -50,7 +52,8 @@ export const HostelProvider = ({ children }: { children: ReactNode }) => {
   // Logic: Handle Updates (For Member 3 - Admin Dashboard)
   const triggerUpdate = async (id: string, data: Partial<Hostel>) => {
     // 1. Update the "database"
-    const updatedHostel = await fakeAPI.updateHostel(id, data);
+    // const updatedHostel = await fakeAPI.updateHostel(id, data);
+    const updatedHostel = await firebaseAPI.updateHostel(id, data);
 
     if (updatedHostel) {
       // 2. Update the local state immediately so the user sees the change
@@ -67,17 +70,20 @@ export const HostelProvider = ({ children }: { children: ReactNode }) => {
   // Logic: Handle Adding (For Member 3 - Admin Dashboard)
   const addHostelData = async (newHostel: Hostel) => {
     // 1. Send to "Database"
-    await fakeAPI.addHostel(newHostel);
+    // await fakeAPI.addHostel(newHostel);
+    const savedHostel = await firebaseAPI.addHostel(newHostel);
 
     // 2. Update local state immediately so it appears in the table (Optimistic UI)
-    setHostels((prev) => [...prev, newHostel]);
-    setFilteredHostels((prev) => [...prev, newHostel]);
+    // For Firebase, we use the returned object which has the REAL ID from the database
+    setHostels((prev) => [...prev, savedHostel]);
+    setFilteredHostels((prev) => [...prev, savedHostel]);
   };
 
   // Logic: Handle Deleting (For Member 3 - Admin Dashboard)
   const deleteHostelData = async (id: string) => {
     // 1. Tell "Database" to delete
-    await fakeAPI.deleteHostel(id);
+    // await fakeAPI.deleteHostel(id);
+    await firebaseAPI.deleteHostel(id);
 
     // 2. Remove from local state
     setHostels((prev) => prev.filter((h) => h.id !== id));
