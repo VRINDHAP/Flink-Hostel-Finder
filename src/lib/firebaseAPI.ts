@@ -1,5 +1,5 @@
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc, increment, writeBatch } from "firebase/firestore"; 
-import { db } from "./firebase"; 
+import { collection, runTransaction, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc, increment, writeBatch } from "firebase/firestore";
+import { db } from "./firebase";
 import { Hostel, Booking } from "../types";
 
 const COLLECTION_NAME = "hostels";
@@ -90,7 +90,7 @@ export const addBooking = async (bookingData: any) => {
 
         // 3. Commit both changes together
         await batch.commit();
-        
+
         console.log("Booking saved & Seats updated reserved.");
         return true;
     } catch (error) {
@@ -110,18 +110,18 @@ export const updateBookingStatus = async (id: string, hostelId: string, status: 
 
         // 2. Handle Seat Logic on Approval/Rejection
         const hostelRef = doc(db, COLLECTION_NAME, hostelId);
-        
+
         if (status === 'confirmed') {
-             // If confirmed, simply remove the 'reserved' tag (count stays down)
-             batch.update(hostelRef, {
-                 seatsReserved: increment(-1)
-             });
+            // If confirmed, simply remove the 'reserved' tag (count stays down)
+            batch.update(hostelRef, {
+                seatsReserved: increment(-1)
+            });
         } else if (status === 'rejected') {
-             // If rejected, give the seat back!
-             batch.update(hostelRef, {
-                 seatsAvailable: increment(1),
-                 seatsReserved: increment(-1)
-             });
+            // If rejected, give the seat back!
+            batch.update(hostelRef, {
+                seatsAvailable: increment(1),
+                seatsReserved: increment(-1)
+            });
         }
 
         await batch.commit();
@@ -131,3 +131,4 @@ export const updateBookingStatus = async (id: string, hostelId: string, status: 
         return false;
     }
 };
+
