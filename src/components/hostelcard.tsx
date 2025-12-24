@@ -1,63 +1,49 @@
-import Image from "next/image";
-import Link from "next/link"; // 1. Import Link
+import React from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { MapPin } from 'lucide-react';
 
-type HostelCardProps = {
-  id: string; // 2. Add ID so we know which page to open
-  image: string;
+interface HostelCardProps {
+  id: string;
   name: string;
-  type: "Boys" | "Girls";
+  type: string;
+  image: string;
   distance: string;
-};
+  // Optional: receive seats info
+  seatsAvailable?: number;
+  seatsReserved?: number;
+}
 
-export default function HostelCard({
-  id,
-  image,
-  name,
-  type,
-  distance,
-}: HostelCardProps) {
+export default function HostelCard({ id, name, type, image, distance }: HostelCardProps) {
   return (
-    // 3. Wrap the whole card in a Link
-    <Link href={`/hostel/${id}`} className="block group">
-      <div className="bg-white text-gray-800 rounded-2xl shadow-lg overflow-hidden w-full hover:scale-105 transition-transform duration-300 border border-gray-100">
+    <Link href={`/hostel/${id}`} className="group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 w-full max-w-sm flex flex-col">
+      <div className="relative h-56 w-full overflow-hidden">
+        <Image
+          src={image}
+          alt={name}
+          fill
+          className="object-cover group-hover:scale-110 transition-transform duration-500"
+        />
+        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-indigo-600 shadow-sm">
+          {type}
+        </div>
+      </div>
+      
+      <div className="p-5 flex flex-col flex-grow">
+        <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-1 group-hover:text-indigo-600 transition-colors">
+          {name}
+        </h3>
         
-        {/* Hostel Image */}
-        <div className="relative w-full h-56">
-          <Image
-            src={image}
-            alt={name}
-            fill
-            className="object-cover"
-          />
-          {/* Optional: Add a subtle overlay on hover */}
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+        <div className="flex items-center text-gray-500 mb-4 text-sm">
+          <MapPin className="w-4 h-4 mr-1 text-gray-400" />
+          <span className="truncate">{distance}</span>
         </div>
 
-        {/* Card Content */}
-        <div className="p-5 space-y-3">
-          <div className="flex justify-between items-start">
-            <h2 className="text-xl font-bold line-clamp-1">{name}</h2>
-            <span
-              className={`px-3 py-1 text-xs rounded-full font-bold uppercase tracking-wide ${
-                type === "Boys"
-                  ? "bg-blue-100 text-blue-700"
-                  : "bg-pink-100 text-pink-700"
-              }`}
-            >
-              {type}
-            </span>
-          </div>
-
-          <div className="flex items-center text-gray-600 text-sm">
-            <span className="mr-2">📍</span>
-            <span className="truncate">{distance} from college</span>
-          </div>
-          
-          <div className="pt-2">
-             <span className="text-indigo-600 font-medium text-sm group-hover:underline">
-                View Details &rarr;
-             </span>
-          </div>
+        <div className="mt-auto pt-4 border-t border-gray-100 flex justify-between items-center text-sm">
+          <span className="text-indigo-600 font-semibold group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
+            View Details 
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+          </span>
         </div>
       </div>
     </Link>

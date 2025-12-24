@@ -11,11 +11,12 @@ export interface Hostel {
     price: number;
     seatsAvailable: number;
     totalSeats: number;
+    seatsReserved?: number; // <--- NEW: Tracks pending seats
     amenities: string[];
     images: string[];
-    location: string; // Keeping it simple as a string for now based on your old data
+    location: string;
     verified: boolean;
-    contactNumber: string; // Warden's number
+    contactNumber: string;
     description: string;
 }
 
@@ -25,7 +26,7 @@ export interface Booking {
   studentPhone: string;
   hostelId: string;
   hostelName: string;
-  bookingDate: string; 
-  amountPaid: number;
-  status: 'confirmed' | 'cancelled';
+  joiningDate: string; 
+  status: 'pending' | 'confirmed' | 'rejected';
+  timestamp: string;
 }

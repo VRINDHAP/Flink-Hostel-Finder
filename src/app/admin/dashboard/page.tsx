@@ -1,20 +1,25 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation'; // Important for redirecting
 import { useHostels } from '@/context/HostelContext';
 import { Hostel } from '@/types';
+import { auth } from '@/lib/firebase'; // Ensure this matches your firebase.ts path
+import { onAuthStateChanged } from 'firebase/auth';
 import { Plus, Edit2, Trash2, Search, Building2, MapPin, Phone, IndianRupee, BedDouble, X } from 'lucide-react';
 
 export default function AdminDashboard() {
   // 1. Get Global Data & Functions from Context
   const { hostels, addHostel, deleteHostel, triggerUpdate } = useHostels();
+  const router = useRouter();
 
-  // 2. Local State for Dashboard-specific things
+  // 2. Local State
+  const [loadingAuth, setLoadingAuth] = useState(true); // To show a spinner while checking login
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // 3. Form State (The "Draft" Hostel)
+  // 3. Form State
   const [formData, setFormData] = useState<Partial<Hostel>>({
     name: '',
     location: '',
@@ -24,39 +29,51 @@ export default function AdminDashboard() {
     type: 'men'
   });
 
-  // --- HANDLERS ---
+  // --- SECURITY GUARD: CHECK LOGIN STATUS ---
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // User is logged in, allow access
+        setLoadingAuth(false);
+      } else {
+        // User is NOT logged in, kick them out
+        router.push('/admin');
+      }
+    });
 
-  // Opens the form in "Add" mode (empty fields)
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, [router]);
+
+  // --- HANDLERS ---
   const handleOpenAdd = () => {
     setIsEditMode(false);
     setFormData({ name: '', location: '', price: 0, contactNumber: '', seatsAvailable: 0, type: 'men' });
     setIsModalOpen(true);
   };
 
-  // Opens the form in "Edit" mode (pre-filled fields)
   const handleOpenEdit = (hostel: Hostel) => {
     setIsEditMode(true);
     setFormData(hostel);
     setIsModalOpen(true);
   };
 
-  // Saves the data (Calls Context functions)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (isEditMode && formData.id) {
-      // SCENARIO A: Updating an existing hostel
+      // SCENARIO A: Updating
       await triggerUpdate(formData.id, formData);
       alert("Hostel Updated Successfully!");
     } else {
-      // SCENARIO B: Creating a new hostel
+      // SCENARIO B: Creating
       const newHostel: Hostel = {
         ...formData as Hostel,
-        id: Date.now().toString(), // Simple ID generation
+        id: Date.now().toString(),
         verified: true,
-        amenities: ['WiFi', 'Mess'], // Default amenities for now
+        amenities: ['WiFi', 'Mess'],
         totalSeats: formData.seatsAvailable || 10,
-        images: ['/images/hostel1.jpg'], // Placeholder image
+        images: ['/images/hostel1.jpg'],
         description: 'New hostel added via Admin Dashboard'
       };
       await addHostel(newHostel);
@@ -76,6 +93,16 @@ export default function AdminDashboard() {
     hostel.location.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // --- LOADING VIEW (While checking if user is logged in) ---
+  if (loadingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
+
+  // --- MAIN DASHBOARD VIEW ---
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-gray-900">
 
@@ -89,13 +116,24 @@ export default function AdminDashboard() {
               </div>
               <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
             </div>
-            <button
-              onClick={handleOpenAdd}
-              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium transition-colors shadow-sm active:transform active:scale-95"
-            >
-              <Plus className="w-4 h-4" />
-              Add Hostel
-            </button>
+            
+            <div className="flex items-center gap-4">
+               {/* LOGOUT BUTTON */}
+               <button 
+                  onClick={() => auth.signOut()}
+                  className="text-sm text-gray-500 hover:text-red-600 font-medium"
+               >
+                  Logout
+               </button>
+
+               <button
+                  onClick={handleOpenAdd}
+                  className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium transition-colors shadow-sm active:transform active:scale-95"
+               >
+                  <Plus className="w-4 h-4" />
+                  Add Hostel
+               </button>
+            </div>
           </div>
         </div>
       </header>
@@ -220,7 +258,7 @@ export default function AdminDashboard() {
         </div>
       </main>
 
-      {/* POPUP FORM MODAL (FIXED) */}
+      {/* POPUP FORM MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6" role="dialog" aria-modal="true">
           {/* Background overlay */}

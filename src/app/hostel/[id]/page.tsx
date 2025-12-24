@@ -5,7 +5,8 @@ import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useHostels } from "@/context/HostelContext";
 import { Hostel } from "@/types";
-import { X } from "lucide-react"; // Import Close Icon
+import { X } from "lucide-react";
+import { addBooking } from "@/lib/firebaseAPI"; // Use Firebase Direct
 
 export default function HostelDetails() {
   const { id } = useParams();
@@ -13,7 +14,7 @@ export default function HostelDetails() {
   const [hostel, setHostel] = useState<Hostel | undefined>(undefined);
   const router = useRouter();
 
-  // --- NEW: Booking Form State ---
+  // Booking Form State
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [bookingStatus, setBookingStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
   
@@ -30,47 +31,44 @@ export default function HostelDetails() {
     }
   }, [id, hostels, loading]);
 
-  // --- NEW: Handle Form Submission ---
+  // Handle Form Submission
   const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBookingStatus('sending');
 
-    // 1. Prepare the Data Packet
     const payload = {
-      bookingId: `BK-${Date.now()}`, // Unique Booking ID
-      websiteName: "Flink Hostel Finder",
       hostelId: hostel?.id,
       hostelName: hostel?.name,
       studentName: formData.name,
       studentPhone: formData.phone,
       joiningDate: formData.date,
+      status: 'pending',
       timestamp: new Date().toISOString()
     };
 
-    console.log("Sending Payload to n8n:", payload);
-
     try {
-      // ---------------------------------------------------------
-      // WE WILL PASTE YOUR N8N WEBHOOK URL HERE IN THE NEXT STEP
-      // ---------------------------------------------------------
-       const response = await fetch('https://vrindhaaa.app.n8n.cloud/webhook/booking', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-       });
+      const success = await addBooking(payload);
       
-      // For now, we simulate a success after 1 second
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setBookingStatus('success');
-      
-      // Close modal after 2 seconds
-      setTimeout(() => {
-        setIsBookingOpen(false);
-        setBookingStatus('idle');
-        setFormData({ name: '', phone: '', date: '' });
-        alert("Booking request sent successfully!");
-      }, 2000);
+      if (success && hostel) {
+        setBookingStatus('success');
+        
+        // --- OPTIMISTIC UI UPDATE ---
+        // Immediately update the screen numbers so you see it happen
+        setHostel({
+            ...hostel,
+            seatsAvailable: hostel.seatsAvailable - 1,
+            seatsReserved: (hostel.seatsReserved || 0) + 1
+        });
+
+        setTimeout(() => {
+          setIsBookingOpen(false);
+          setBookingStatus('idle');
+          setFormData({ name: '', phone: '', date: '' });
+          alert(`Booking Sent! One seat is now marked as reserved.`);
+        }, 2000);
+      } else {
+        setBookingStatus('error');
+      }
 
     } catch (error) {
       console.error("Booking Error:", error);
@@ -135,10 +133,24 @@ export default function HostelDetails() {
                 <span className="text-gray-600">Type</span>
                 <span className="font-semibold capitalize">{hostel.type}</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Seats Available</span>
-                <span className="font-bold text-green-600">{hostel.seatsAvailable} / {hostel.totalSeats}</span>
+              
+              {/* --- UPDATED SEAT DISPLAY --- */}
+              <div className="flex justify-between text-sm items-start">
+                <span className="text-gray-600 pt-1">Seats Available</span>
+                <div className="text-right">
+                    <span className="font-bold text-green-600 text-lg">
+                        {hostel.seatsAvailable} / {hostel.totalSeats}
+                    </span>
+                    {/* Show "Reserved" text if any seats are pending */}
+                    {(hostel.seatsReserved || 0) > 0 && (
+                        <div className="text-xs text-orange-500 font-medium animate-pulse">
+                           ⚠️ {hostel.seatsReserved} Reserved
+                        </div>
+                    )}
+                </div>
               </div>
+              {/* --------------------------- */}
+
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Warden Contact</span>
                 <span className="font-semibold">{hostel.contactNumber}</span>

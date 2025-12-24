@@ -38,11 +38,19 @@ export default function Home() {
     <main className="min-h-screen bg-gray-50">
       
       {/* --- 1. HERO SECTION --- */}
-      <div className="w-full py-16 flex flex-col items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg">
+      <div className="w-full py-20 flex flex-col items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg">
         <div className="text-center space-y-4 mb-8 px-4">
-          <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight drop-shadow-md">
-            Hostel Finder
+          
+          {/* --- NEW: PTA BADGE --- */}
+          <div className="inline-block px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs md:text-sm font-medium tracking-wider uppercase mb-4 shadow-sm">
+            Under Government Engineering College Thrissur PTA
+          </div>
+
+          {/* --- NEW: TITLE WITH "by Flink" --- */}
+          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight drop-shadow-md">
+            Hostel Finder <span className="text-indigo-200 block md:inline">by Flink</span>
           </h1>
+          
           <p className="text-lg md:text-xl text-indigo-100 max-w-2xl mx-auto font-light">
             The safest and most affordable student accommodation near GEC Thrissur.
           </p>
@@ -65,11 +73,9 @@ export default function Home() {
       </div>
 
       {/* --- 2. MAIN LAYOUT --- */}
-      {/* UPDATED: max-w-[1600px] makes the whole page much wider, shifting filters left */}
       <div className="max-w-[1600px] mx-auto px-6 py-12 flex flex-col md:flex-row gap-12">
         
-        {/* --- LEFT SIDEBAR (Fixed narrower width) --- */}
-        {/* UPDATED: w-64 is a fixed width, preventing it from eating up card space */}
+        {/* --- LEFT SIDEBAR --- */}
         <aside className="w-full md:w-64 shrink-0">
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 sticky top-8">
             <div className="flex justify-between items-center mb-6">
@@ -82,6 +88,7 @@ export default function Home() {
               </button>
             </div>
 
+            {/* Filter: Gender */}
             <div className="mb-8">
               <h3 className="font-semibold mb-3 text-gray-700">Gender</h3>
               <div className="space-y-3">
@@ -118,6 +125,7 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Filter: Price */}
             <div className="mb-8">
               <div className="flex justify-between mb-2">
                 <h3 className="font-semibold text-gray-700">Max Price</h3>
@@ -138,10 +146,11 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Filter: Verified */}
             <div className="mb-6 pt-6 border-t border-gray-100">
               <label className="flex items-center justify-between cursor-pointer group hover:bg-gray-50 p-2 rounded-lg transition">
                 <span className="font-semibold text-gray-700 group-hover:text-indigo-700 transition">
-                  Verified Only
+                  PTA Verified Only
                 </span>
                 <input
                   type="checkbox"
@@ -167,7 +176,6 @@ export default function Home() {
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
             </div>
           ) : filteredHostels.length > 0 ? (
-            /* UPDATED: gap-x-20 adds HUGE horizontal space, gap-y-12 keeps vertical normal */
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-20 gap-y-12 justify-items-center">
               {filteredHostels.map((hostel) => (
                 <HostelCard
